@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
+using OrchardCore.Media.Drivers;
 using OrchardCore.Navigation;
 
 namespace OrchardCore.Media
@@ -20,6 +21,15 @@ namespace OrchardCore.Media
             {
                 return Task.CompletedTask;
             }
+
+            builder
+                .Add(S["Configuration"], configuration => configuration
+                    .Add(S["Settings"], settings => settings
+                        .Add(S["Media"], S["Media"], layers => layers
+                            .Action("Index", "Admin", new { area = "OrchardCore.Settings", groupId = MediaSiteSettingsDisplayDriver.GroupId })
+                            .Permission(Permissions.ManageMedia)
+                            .LocalNav()
+                        )));
 
             builder
                 .Add(S["Content"], content => content

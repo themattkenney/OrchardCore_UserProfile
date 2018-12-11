@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using OrchardCore.BackgroundTasks;
 using OrchardCore.ContentManagement;
 using OrchardCore.ContentManagement.Display.ContentDisplay;
 using OrchardCore.ContentTypes.Editors;
@@ -28,11 +29,13 @@ using OrchardCore.Media.Recipes;
 using OrchardCore.Media.Services;
 using OrchardCore.Media.Settings;
 using OrchardCore.Media.TagHelpers;
+using OrchardCore.Media.Tasks;
 using OrchardCore.Media.ViewModels;
 using OrchardCore.Modules;
 using OrchardCore.Navigation;
 using OrchardCore.Recipes;
 using OrchardCore.Security.Permissions;
+using OrchardCore.Settings;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Web.Caching;
 using SixLabors.ImageSharp.Web.Commands;
@@ -76,9 +79,13 @@ namespace OrchardCore.Media
                 return new MediaFileStore(fileStore, mediaUrlBase);
             });
 
+           
+
             services.AddScoped<IPermissionProvider, Permissions>();
             services.AddScoped<IAuthorizationHandler, MediaFieldsFolderAuthorizationHandler>();
             services.AddScoped<INavigationProvider, AdminMenu>();
+            services.AddScoped<PurgeTempFilesService>();
+            services.AddSingleton<IBackgroundTask, PurgeTempFilesBackgroundTask>();
 
             services.AddSingleton<ContentPart, ImageMediaPart>();
             services.AddMedia();
@@ -166,6 +173,8 @@ namespace OrchardCore.Media
             services.AddScoped<MediaFieldLimitedEditorFileService, MediaFieldLimitedEditorFileService>();
 
             services.AddRecipeExecutionStep<MediaStep>();
+
+            services.AddScoped<IDisplayDriver<ISite>, MediaSiteSettingsDisplayDriver>();
 
             // MIME types
             services.TryAddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();

@@ -1,0 +1,10 @@
+@model OrchardCore.Media.ViewModels.MediaSiteSettingsViewModel
+
+<div class="form-group" asp-validation-class-for="LimitedEditorDeleteTempFilesOlderThan">
+    <label asp-for="LimitedEditorDeleteTempFilesOlderThan">
+        @T["Delete Media Field Temp Files Older Than"]
+        <span asp-validation-for="LimitedEditorDeleteTempFilesOlderThan"></span>
+    </label>
+    <input asp-for="LimitedEditorDeleteTempFilesOlderThan" class="form-control col-md-2" type="text" />
+    <span class="hint">@T["Files older than this value will be deleted. Value in minutes. Set to 0 to keep them forever."]</span>    
+</div>
