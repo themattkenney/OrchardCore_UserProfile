@@ -61,9 +61,6 @@ function initializeMediaFieldWithLimitedEditor(el, idOfUploadButton, uploadActio
             canAddMedia: function () {
                 return this.mediaItems.length === 0 || this.mediaItems.length > 0 && allowMultiple;
             },
-            canRemoveMedia: function () {
-                return this.selectedMedia || this.mediaItems.length === 1;
-            },
             thumbSize: function () {
                 return this.smallThumbs ? 120 : 240;
             },

@@ -41,7 +41,7 @@
                         <input id="@mediaFieldId-field-file-upload" type="file" name="files" multiple="multiple">
                         <i class="fa fa-upload"></i>
                     </label>
-                    <a v-show="canRemoveMedia" href="javascript:;" v-on:click="removeSelected" class="btn btn-secondary btn-sm"><i class="fa fa-trash"></i></a>
+                    <a href="javascript:;" v-on:click="removeSelected" class="btn btn-secondary btn-sm" v-bind:class="{ disabled : !selectedMedia }"><i class="fa fa-trash"></i></a>
                 </div>
                 <div class="selected-media-name">
                     <code class="text-right" v-if="selectedMedia">@T["{{{{ selectedMedia.name }}}} ({{{{ isNaN(fileSize)? 0 : fileSize }}}} KB)"]</code>
