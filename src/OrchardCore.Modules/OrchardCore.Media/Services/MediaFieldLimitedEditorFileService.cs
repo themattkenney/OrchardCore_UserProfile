@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,15 +24,12 @@ namespace OrchardCore.Media.Services
             T = stringLocalizer;
 
             MediaFieldsFolder = "mediafields";
-            MediaFieldsTempSubFolder = _fileStore.Combine(MediaFieldsFolder, "temp");
-            MediaFieldsTrashSubFolder = _fileStore.Combine(MediaFieldsFolder, "trash");
+            MediaFieldsTempSubFolder = _fileStore.Combine(MediaFieldsFolder, "temp");            
         }
 
         public string MediaFieldsFolder { get; }
         public string MediaFieldsTempSubFolder { get; }
-        public string MediaFieldsTrashSubFolder { get; }
-
-
+        
 
         public async Task HandleFilesOnFieldUpdateAsync(List<EditMediaFieldItemInfo> items, string contentItemId)
         {
@@ -46,60 +42,41 @@ namespace OrchardCore.Media.Services
 
             RemoveTemporary(items);
 
-            MoveDeletedToTrash(items, contentItemId);
-
-            MoveUsedToContentItemDirAndUpdateTheirPaths(items, contentItemId);
-
-
+            MoveNewToContentItemDirAndUpdatePaths(items, contentItemId);
         }
 
         private async Task EnsureGlobalDirectoriesExist()
         {
             await _fileStore.TryCreateDirectoryAsync(MediaFieldsFolder);
             await _fileStore.TryCreateDirectoryAsync(MediaFieldsTempSubFolder);
-            await _fileStore.TryCreateDirectoryAsync(MediaFieldsTrashSubFolder);
         }
 
-        // Remove temp files: Files that are just uploaded and then inmediately discarded.
+        
+        // Files just uploaded and then inmediately discarded.
         private void RemoveTemporary(List<EditMediaFieldItemInfo> items)
         {
             items.Where(x => x.IsRemoved && x.IsNew).ToList().ForEach(async x => await _fileStore.TryDeleteFileAsync(x.Path));
         }
 
 
-        // Files that where used and now are being deleted are moved to a trash folder.
-        private void MoveDeletedToTrash(List<EditMediaFieldItemInfo> items, string contentItemId)
+        // Newly added files
+        private void MoveNewToContentItemDirAndUpdatePaths(List<EditMediaFieldItemInfo> items, string contentItemId)
         {
-            items.Where(x => x.IsRemoved && !x.IsNew).ToList()
-                .ForEach(async x =>
-                {
-                    var fileName = (await _fileStore.GetFileInfoAsync(x.Path)).Name;
-                    if (string.IsNullOrWhiteSpace(fileName))
-                    {
-                        throw new FileNotFoundException(T["Can't find the file for {0}", x.Path]);
-                    }
-                    var newPath = _fileStore.Combine(new string[] { MediaFieldsTrashSubFolder, contentItemId + fileName });
-                    await _fileStore.MoveFileAsync(x.Path, newPath);
-                });
-        }
-
-
-        // Files used are moved from temp to the content item folder, and the path is updated accordingly.
-        private void MoveUsedToContentItemDirAndUpdateTheirPaths(List<EditMediaFieldItemInfo> items, string contentItemId)
-        {
-            // todo: performance; we are getting fileinfo twice.
             items.Where(x => !x.IsRemoved && x.IsNew).ToList()
                 .ForEach(async x =>
                 {
                     var targetDir = _fileStore.Combine(MediaFieldsFolder, GetSplittedDirName(contentItemId));
-                    await _fileStore.TryCreateDirectoryAsync(targetDir);
                     var uploadFileName = (await _fileStore.GetFileInfoAsync(x.Path)).Name;
-                    var fileName = await BuildUniqueNameFromTemporaryGuidName(uploadFileName, targetDir);
-                    var newPath = _fileStore.Combine(new string[] { targetDir, fileName });
-                    await _fileStore.MoveFileAsync(x.Path, newPath);
+                    var finalFileName = await BuildUniqueNameFromTemporaryGuidName(uploadFileName, targetDir);
+                    var finalFilePath = _fileStore.Combine(new string[] { targetDir, finalFileName });
 
-                    // update the path with the new name and folder
-                    x.Path = newPath;
+                    await _fileStore.TryCreateDirectoryAsync(targetDir);
+
+                    // move the file
+                    await _fileStore.MoveFileAsync(x.Path, finalFilePath);
+
+                    // update the path
+                    x.Path = finalFilePath;
                 });
         }
 
@@ -156,8 +133,8 @@ namespace OrchardCore.Media.Services
 
 
         /// <summary>
-        /// Converts an content item id string into a path composed of several dirs. 
-        /// It is a mechanism to avoid having a too long list of dirs in the root dir.
+        /// Converts an content item id string into a path composed of several nested dirs. 
+        /// It is a mechanism to avoid having too many dirs in the root dir.
         /// </summary>
         private string GetSplittedDirName(string id)
         {
