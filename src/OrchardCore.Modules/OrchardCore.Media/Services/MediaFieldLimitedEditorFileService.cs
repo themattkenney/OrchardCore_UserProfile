@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using OrchardCore.FileStorage;
@@ -90,7 +91,7 @@ namespace OrchardCore.Media.Services
             items.Where(x => !x.IsRemoved && x.IsNew).ToList()
                 .ForEach(async x =>
                 {
-                    var targetDir = _fileStore.Combine(MediaFieldsFolder, contentItemId);
+                    var targetDir = _fileStore.Combine(MediaFieldsFolder, GetSplittedDirName(contentItemId));
                     await _fileStore.TryCreateDirectoryAsync(targetDir);
                     var uploadFileName = (await _fileStore.GetFileInfoAsync(x.Path)).Name;
                     var fileName = await BuildUniqueNameFromTemporaryGuidName(uploadFileName, targetDir);
@@ -151,6 +152,33 @@ namespace OrchardCore.Media.Services
         private async Task<bool> IsFileNameUnique(string fileName, string fileExtension, string directory)
         {
             return await _fileStore.GetFileInfoAsync(_fileStore.Combine(directory, fileName + fileExtension)) == null;
+        }
+
+
+        /// <summary>
+        /// Converts an content item id string into a path composed of several dirs. 
+        /// It is a mechanism to avoid having a too long list of dirs in the root dir.
+        /// </summary>
+        private string GetSplittedDirName(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("Name to split can't be null");
+            }
+
+            if (id.Length != 26)
+            {
+                throw new ArgumentException("Name to split must be 26 characters long.");
+            }
+
+            var result = new StringBuilder();
+            for (int i = 0; i < 13; i++)
+            {
+                result.Append(id.Substring(i * 2, 2));
+                result.Append("\\");
+            }
+
+            return result.ToString().TrimEnd('\\');
         }
     }
 }
