@@ -55,18 +55,13 @@ Vue.component('mediaFieldThumbsContainer', {
         thumbSize: Number
     },
     created: function () {
-        console.log('created');
-        
+
         var self = this;
+
         // retrieving localized strings from view
         self.T.mediaNotFound = $('#t-media-not-found').val();
         self.T.discardWarning = $('#t-discard-warning').val();
         self.T.noImages = $('#t-no-images').val();
-    },
-    mounted: function () {
-        console.log('mounted');
-        console.log(this.mediaItems);
-
     },
     methods: {
         selectAndDeleteMedia: function (media) {            

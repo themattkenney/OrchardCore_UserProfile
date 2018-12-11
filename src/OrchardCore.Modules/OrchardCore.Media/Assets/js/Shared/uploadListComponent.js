@@ -47,13 +47,9 @@ Vue.component('uploadList', {
         }
     },
     mounted: function () {
-        console.log('uplaoder progress mounted');
         var self = this;
 
-        var selector = '#' + self.idOfUploadInputField;
-        console.log('selector is ' + selector);
         $('#' + self.idOfUploadInputField).bind('fileuploadadd', function (e, data) {
-            console.log('file upload add');
             if (!data.files) { 
                 return;
             }

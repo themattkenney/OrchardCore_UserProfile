@@ -1,5 +1,4 @@
-function initializeMediaFieldWithBrowserEditor(el, modalBodyElement, mediaItemUrl, allowMultiple) {
-    console.log('initializing the standard one');
+function initializeMediaFieldWithStandardEditor(el, modalBodyElement, mediaItemUrl, allowMultiple) {
 
     var target = $(document.getElementById($(el).data('for')));
     var initialPaths = target.data("init");
@@ -29,10 +28,7 @@ function initializeMediaFieldWithBrowserEditor(el, modalBodyElement, mediaItemUr
                         }
                         mediaPaths.push({ Path: x.mediaPath });
                     });
-                    var stringified = JSON.stringify(mediaPaths);
-                    console.log('stringified');
-                    console.log(stringified);
-                    return stringified;
+                    return JSON.stringify(mediaPaths);                    
                 },
                 set: function (values) {
                     var self = this;
@@ -88,8 +84,6 @@ function initializeMediaFieldWithBrowserEditor(el, modalBodyElement, mediaItemUr
         },
         mounted: function () {
             var self = this;
-            console.log('initial paths is : ');
-            console.log(initialPaths);
 
             self.paths = initialPaths;
 

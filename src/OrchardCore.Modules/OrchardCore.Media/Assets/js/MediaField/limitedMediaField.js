@@ -1,4 +1,4 @@
-function initializeMediaFieldWithUploaderEditor(el, idOfUploadButton, uploadAction, mediaItemUrl, allowMultiple, tempUploadFolder) {
+function initializeMediaFieldWithLimitedEditor(el, idOfUploadButton, uploadAction, mediaItemUrl, allowMultiple, tempUploadFolder) {
     
     var target = $(document.getElementById($(el).data('for')));
     var initialPaths = target.data("init");
@@ -87,18 +87,14 @@ function initializeMediaFieldWithUploaderEditor(el, idOfUploadButton, uploadActi
             self.paths = initialPaths;
 
             self.$on('selectAndDeleteMediaRequested', function (media) {
-                console.log('received');
                 self.selectAndDeleteMedia(media);
             });
 
             self.$on('selectMediaRequested', function (media) {
-                console.log('received');
                 self.selectMedia(media);
             });
-
             
             var selector = '#' + idOfUploadButton;
-
 
             $(document).bind('drop dragover', function (e) {
                 e.preventDefault();
@@ -113,13 +109,11 @@ function initializeMediaFieldWithUploaderEditor(el, idOfUploadButton, uploadActi
                 dataType: 'json',
                 url: uploadAction,
                 add: function (e, data) {
-                    console.log('adding');
                     var count = data.files.length;
                     var i;
                     for (i = 0; i < count; i++) {
                         data.files[i].uploadName =
                             self.getUniqueId() + data.files[i].name;
-                        console.log(data.files[i].uploadName);
                     }
                     data.submit();
                 },
@@ -132,9 +126,6 @@ function initializeMediaFieldWithUploaderEditor(el, idOfUploadButton, uploadActi
                     ];
                 },
                 done: function (e, data) {
-                    console.log('success');
-                    console.log(data.result.files);
-
                     var newMediaItems = [];
                     if (data.result.files.length > 0) {
                         for (var i = 0; i < data.result.files.length; i++) {

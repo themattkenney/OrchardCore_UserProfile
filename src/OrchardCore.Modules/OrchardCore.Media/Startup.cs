@@ -161,6 +161,7 @@ namespace OrchardCore.Media
             services.AddSingleton<ContentField, MediaField>();
             services.AddScoped<IContentFieldDisplayDriver, MediaFieldDisplayDriver>();
             services.AddScoped<IContentPartFieldDefinitionDisplayDriver, MediaFieldSettingsDriver>();
+            services.AddScoped<MediaFieldLimitedEditorFileService, MediaFieldLimitedEditorFileService>();
 
             services.AddRecipeExecutionStep<MediaStep>();
 

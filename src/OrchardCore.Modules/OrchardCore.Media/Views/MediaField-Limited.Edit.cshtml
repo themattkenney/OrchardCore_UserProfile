@@ -4,20 +4,20 @@
 
 @{
     var settings = Model.PartFieldDefinition.Settings.ToObject<MediaFieldSettings>();
+    var uploadAction = "/OrchardCore.Media/Admin/Upload";
     var mediaFieldId = Html.IdFor(m => m);
 }
 
 <partial name="Shared/MediaFieldEditResources.cshtml" />
 
-<script at="Foot">
-
-    initializeMediaApplication(false, '@Url.Action("MediaApplication", "Admin", new { area = "OrchardCore.Media" })');
-
-    initializeMediaFieldWithStandardEditor(
+<script at="Foot">    
+    initializeMediaFieldWithLimitedEditor(
         document.getElementById('@mediaFieldId'),
-        document.getElementById('@mediaFieldId-ModalBody'),
+        '@mediaFieldId-field-file-upload',
+        '@uploadAction',
         '@Url.Action("GetMediaItem", "Admin", new { area = "OrchardCore.Media" })',
-        @(settings.Multiple ? "true" : "false"));
+        @(settings.Multiple ? "true" : "false"),
+        '@Model.TempUploadFolder');
 </script>
 
 <div class="mediafield-editor" id="@mediaFieldId" data-for="@Html.IdFor(m => m.Paths)">
@@ -29,7 +29,7 @@
                 <span class="hint">@settings.Hint</span>
             }
 
-            <input asp-for="Paths" type="hidden" class="paths" :value="paths" data-init="@Model.Paths" />
+            <input asp-for="Paths" type="hidden" class="paths" :value="paths" data-init="@Model.Paths" />            
 
             <nav class="media-field-toolbar" v-cloak>
                 <div class="btn-group">
@@ -37,39 +37,25 @@
                         <span v-show="!smallThumbs" title="@T["Small Thumbs"]"><i class="fa fa-compress"></i></span>
                         <span v-show="smallThumbs" title="@T["Large Thumbs"]"><i class="fa fa-expand"></i></span>
                     </button>
-                    <a href="javascript:;" v-show="canAddMedia" v-on:click="showModal" class="btn btn-secondary btn-sm"> <i class="fa fa-plus"></i></a>
-                    <a href="javascript:;" v-on:click="removeSelected" class="btn btn-secondary btn-sm" v-bind:class="{ disabled : !canRemoveMedia }"><i class="fa fa-trash"></i></a>
+                    <label class="btn btn-sm btn-secondary fileinput-button">
+                        <input id="@mediaFieldId-field-file-upload" type="file" name="files" multiple="multiple">
+                        <i class="fa fa-upload"></i>
+                    </label>
+                    <a v-show="canRemoveMedia" href="javascript:;" v-on:click="removeSelected" class="btn btn-secondary btn-sm"><i class="fa fa-trash"></i></a>
                 </div>
                 <div class="selected-media-name">
                     <code class="text-right" v-if="selectedMedia">@T["{{{{ selectedMedia.name }}}} ({{{{ isNaN(fileSize)? 0 : fileSize }}}} KB)"]</code>
                 </div>
             </nav>
+
         </fieldset>
-        <fieldset>
+        <upload-list id-of-upload-input-field="@mediaFieldId"></upload-list>
+        <fieldset class="form-group">
             <media-field-thumbs-container :media-items="mediaItems"
                                           :thumb-size="thumbSize"
                                           :selected-media="selectedMedia">
             </media-field-thumbs-container>
         </fieldset>
-    </div>
-</div>
-
-<div class="modal" id="@mediaFieldId-ModalBody">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">@T["Select Media"]</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary mediaFieldSelectButton">@T["OK"]</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">@T["Cancel"]</button>
-            </div>
-        </div>
     </div>
 </div>
 
